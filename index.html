@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Code Saver</title>
+<style>
+body {
+    font-family: Arial;
+    background: #0f172a;
+    color: white;
+    padding: 20px;
+}
+input, textarea {
+    width: 100%;
+    padding: 10px;
+    margin: 10px 0;
+    border-radius: 8px;
+    border: none;
+}
+button {
+    padding: 10px 20px;
+    background: #22c55e;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+}
+.code-box {
+    background: #1e293b;
+    padding: 15px;
+    border-radius: 10px;
+    margin-top: 15px;
+}
+</style>
+</head>
+<body>
+
+<h2>🌐 Shared Code Saver</h2>
+
+<input id="filename" placeholder="Enter file name">
+<textarea id="code" rows="6" placeholder="Paste your code here..."></textarea>
+<button onclick="saveCode()">Save Code</button>
+
+<h3>Saved Codes:</h3>
+<div id="codes"></div>
+
+<script>
+const BIN_ID = "69c50936b7ec241ddca59c9f";
+const API_KEY = "$2a$10$lN/4ZLLExGE3x/WC65QVP.k4fBsZjIElcmIEaQAFEFP698xsmsRbG";
+
+// Fetch all saved codes
+async function loadCodes() {
+    let res = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}/latest`, {
+        headers: { "X-Master-Key": API_KEY }
+    });
+    let data = await res.json();
+    displayCodes(data.record.codes || []);
+}
+
+// Save new code
+async function saveCode() {
+    let name = document.getElementById("filename").value;
+    let code = document.getElementById("code").value;
+
+    let res = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}/latest`, {
+        headers: { "X-Master-Key": API_KEY }
+    });
+    let data = await res.json();
+
+    let codes = data.record.codes || [];
+    codes.push({ name, code });
+
+    await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, {
+        method: "PUT",
+        headers: {
+            "Content-Type": "application/json",
+            "X-Master-Key": API_KEY
+        },
+        body: JSON.stringify({ codes })
+    });
+
+    loadCodes();
+}
+
+// Display codes
+function displayCodes(codes) {
+    let container = document.getElementById("codes");
+    container.innerHTML = "";
+    codes.forEach(c => {
+        container.innerHTML += `
+            <div class="code-box">
+                <b>${c.name}</b>
+                <pre>${c.code}</pre>
+            </div>
+        `;
+    });
+}
+
+// Load on start
+loadCodes();
+</script>
+
+</body>
+</html>
